@@ -38,6 +38,7 @@ public class GetWeeklyAverageMoodQueryHandler
         );
 
         var weeklyAverageMoodIds = MoodAnalyticsService.CalculateWeeklyAverageMoodRating(
+            DateOnly.FromDateTime(request.FromDate),
             userMoods.Select(m => new Domain.Models.UserDailyMood()
             {
                 MoodId = m.MoodId,

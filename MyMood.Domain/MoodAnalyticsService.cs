@@ -1,6 +1,7 @@
 ﻿namespace MyMood.Domain;
 
 using MyMood.Domain.Models;
+using MyMood.Domain.Utils;
 
 /// <summary>
 /// This service provides methods to calculate average mood ratings based on user submissions.
@@ -41,41 +42,42 @@ public static class MoodAnalyticsService
     /// <param name="userMoods"></param>
     /// <returns></returns>
     public static IEnumerable<AverageMoodForWeek> CalculateWeeklyAverageMoodRating(
-        IEnumerable<UserDailyMood> userMoods
-    )
+      DateOnly startDate,
+      IEnumerable<UserDailyMood> userMoods
+  )
     {
         if (userMoods == null || !userMoods.Any())
             return Enumerable.Empty<AverageMoodForWeek>();
 
-        var minDate = userMoods.Min(m => m.Date);
+        // Group moods into weeks starting from startDate
+        var moodsGroupedByWeek = userMoods
+             .GroupBy(m =>
+             {
+                 var daysSinceStart = (m.Date.DayNumber - startDate.DayNumber);
+                 return daysSinceStart / 7; 
+             });
 
-        //This loops through each UserDailyMood entry. Turns date into an integer timeline.
-        //Then divides by 7 to get week number (index)
-        var moodsWithWeekIndex = userMoods.Select(m => new
+        return moodsGroupedByWeek.Select(g =>
         {
-            m.MoodId,
-            WeekIndex = (m.Date.DayNumber - minDate.DayNumber) / 7,
-        });
+            // Find the most frequent MoodId in this group
+            var mostFrequentMood = g
+                .GroupBy(m => m.MoodId)
+                .OrderByDescending(mg => mg.Count())
+                .First()
+                .Key;
 
-        return moodsWithWeekIndex
-            .GroupBy(m => m.WeekIndex)
-            .Select(g =>
+            // Calculate start and end of the week
+            var weekIndex = g.Key;
+            var weekStart = startDate.AddDays(weekIndex * 7) ;
+            var weekEnd = weekStart.AddDays(6);
+
+            return new AverageMoodForWeek
             {
-                var mostFrequentMood = g.GroupBy(m => m.MoodId)
-                    .Select(mg => new { MoodId = mg.Key, Count = mg.Count() })
-                    .OrderByDescending(mg => mg.Count)
-                    .First();
-
-                var weekStart = minDate.AddDays(g.Key * 7);
-                var weekEnd = weekStart.AddDays(6);
-
-                return new AverageMoodForWeek
-                {
-                    WeekStartDate = weekStart,
-                    WeekEndDate = weekEnd,
-                    MoodId = mostFrequentMood.MoodId,
-                };
-            });
+                WeekStartDate = weekStart,
+                WeekEndDate = weekEnd,
+                MoodId = mostFrequentMood
+            };
+        });
     }
 
     /// <summary>

@@ -29,9 +29,11 @@ Please note:
 ------------
 -> You will need to create database & data to run this application. 
 -> SQL.Md has all SQLs needed to bring up the database 
+-> Appsettings need to be updated for this SQL connection string
 -> Please use Swagger to Create Users. 
-This user creation feature is strictly for demo purposes and should not be used in production.
--> There is CreateData.SQL used to generate some data for testing
+-> You have to specify "admin" as role for system to understand it is admin
+(This user creation feature is strictly for demo purposes and should not be used in production.)
+-> There is CreateData.SQL used to generate some user mood data for testing
 
 The password are hashed using BCrypt before being stored in the database. 
 Production environment have authentication handled using Okta or Entra.

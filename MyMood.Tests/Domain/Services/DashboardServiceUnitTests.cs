@@ -36,7 +36,9 @@ public class DashboardServiceUnitTests
     public void CalculateWeeklyAverageMoodRating_ReturnsCorrectResults()
     {
         var data = TestDataSamples.GetSampleData();
-        var result = MoodAnalyticsService.CalculateWeeklyAverageMoodRating(data).ToList();
+        var result = MoodAnalyticsService.CalculateWeeklyAverageMoodRating(
+            new DateOnly(2024, 01,01),
+            data).ToList();
 
         // Assert that each WeekStartDate is unique
         var distinctWeeks = result.Select(r => r.WeekStartDate).Distinct();
@@ -99,7 +101,7 @@ public class DashboardServiceUnitTests
         var empty = new List<UserDailyMood>();
 
         Assert.Empty(MoodAnalyticsService.CalculateDailyAverageMoodRating(empty));
-        Assert.Empty(MoodAnalyticsService.CalculateWeeklyAverageMoodRating(empty));
+        Assert.Empty(MoodAnalyticsService.CalculateWeeklyAverageMoodRating(new DateOnly(2025, 01, 01), empty));
         Assert.Empty(MoodAnalyticsService.CalculateMonthlyAverageMoodRating(empty));
     }
 }
